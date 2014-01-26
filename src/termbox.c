@@ -37,6 +37,7 @@ static int termw;
 static int termh;
 
 static int inputmode = TB_INPUT_ESC;
+static int outputmode = TB_OUTPUT_MODE_NORMAL;
 
 static struct ringbuffer inbuf;
 
@@ -281,6 +282,13 @@ int tb_select_input_mode(int mode)
 	return inputmode;
 }
 
+int tb_select_output_mode(int mode)
+{
+	if (mode)
+		outputmode = mode;
+	return outputmode;
+}
+
 void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 {
 	foreground = fg;
@@ -318,25 +326,64 @@ static void write_cursor(int x, int y) {
 
 static void write_sgr_fg(uint16_t fg) {
 	char buf[32];
-	WRITE_LITERAL("\033[3");
-	WRITE_INT(fg-1);
-	WRITE_LITERAL("m");
+
+  if (outputmode == TB_OUTPUT_MODE_216) {
+      WRITE_LITERAL("\033[38;5;");
+      WRITE_INT(0x10+fg);
+      WRITE_LITERAL("m");
+  } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE){
+      WRITE_LITERAL("\033[38;5;");
+      WRITE_INT(0xe8+fg);
+      WRITE_LITERAL("m");
+  } else {
+      WRITE_LITERAL("\033[3");
+      WRITE_INT(fg-1);
+      WRITE_LITERAL("m");
+  }
 }
 
 static void write_sgr_bg(uint16_t bg) {
 	char buf[32];
-	WRITE_LITERAL("\033[4");
-	WRITE_INT(bg-1);
-	WRITE_LITERAL("m");
+
+  if (outputmode == TB_OUTPUT_MODE_216) {
+      WRITE_LITERAL("\033[48;5;");
+      WRITE_INT(0x10+bg);
+      WRITE_LITERAL("m");
+  } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE){
+      WRITE_LITERAL("\033[48;5;");
+      WRITE_INT(0xe8+bg);
+      WRITE_LITERAL("m");
+  } else {
+      WRITE_LITERAL("\033[4");
+      WRITE_INT(bg-1);
+      WRITE_LITERAL("m");
+  }
 }
 
 static void write_sgr(uint16_t fg, uint16_t bg) {
 	char buf[32];
-	WRITE_LITERAL("\033[3");
-	WRITE_INT(fg-1);
-	WRITE_LITERAL(";4");
-	WRITE_INT(bg-1);
-	WRITE_LITERAL("m");
+
+  if (outputmode == TB_OUTPUT_MODE_216) {
+      WRITE_LITERAL("\033[38;5;");
+      WRITE_INT(0x10+fg);
+      WRITE_LITERAL("m");
+      WRITE_LITERAL("\033[48;5;");
+      WRITE_INT(0x10+bg);
+      WRITE_LITERAL("m");
+  } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE){
+      WRITE_LITERAL("\033[38;5;");
+      WRITE_INT(0xe8+fg);
+      WRITE_LITERAL("m");
+      WRITE_LITERAL("\033[48;5;");
+      WRITE_INT(0xe8+bg);
+      WRITE_LITERAL("m");
+  } else {
+      WRITE_LITERAL("\033[3");
+      WRITE_INT(fg-1);
+      WRITE_LITERAL(";4");
+      WRITE_INT(bg-1);
+      WRITE_LITERAL("m");
+  }
 }
 
 static void cellbuf_init(struct cellbuf *buf, int width, int height)
@@ -417,29 +464,41 @@ static void send_attr(uint16_t fg, uint16_t bg)
 	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
 	if (fg != lastfg || bg != lastbg) {
 		memstream_puts(&write_buffer, funcs[T_SGR0]);
-		uint16_t fgcol = fg & 0x0F;
-		uint16_t bgcol = bg & 0x0F;
-		if (fgcol != TB_DEFAULT) {
-			if (bgcol != TB_DEFAULT)
-				write_sgr(fgcol, bgcol);
-			else
-				write_sgr_fg(fgcol);
-		} else if (bgcol != TB_DEFAULT) {
-			write_sgr_bg(bgcol);
-		}
+    uint16_t fgcol;
+    uint16_t bgcol;
 
-		if (fg & TB_BOLD)
-			memstream_puts(&write_buffer, funcs[T_BOLD]);
-		if (bg & TB_BOLD)
-			memstream_puts(&write_buffer, funcs[T_BLINK]);
-		if (fg & TB_UNDERLINE)
-			memstream_puts(&write_buffer, funcs[T_UNDERLINE]);
-		if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
-			memstream_puts(&write_buffer, funcs[T_REVERSE]);
+    if (outputmode == TB_OUTPUT_MODE_216) {
+      fgcol = (fg > 215) ? 7 : fg;
+      bgcol = (bg > 215) ? 0 : bg;
+    } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE) {
+      fgcol = (fg > 23) ? 23 : fg;
+      bgcol = (bg > 23) ? 0  : bg;
+    } else {
+      fgcol = fg & 0x0F;
+      bgcol = bg & 0x0F;
 
-		lastfg = fg;
-		lastbg = bg;
-	}
+      if (fg & TB_BOLD)
+        memstream_puts(&write_buffer, funcs[T_BOLD]);
+      if (bg & TB_BOLD)
+        memstream_puts(&write_buffer, funcs[T_BLINK]);
+      if (fg & TB_UNDERLINE)
+        memstream_puts(&write_buffer, funcs[T_UNDERLINE]);
+      if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
+        memstream_puts(&write_buffer, funcs[T_REVERSE]);
+    }
+
+    if (fgcol != lastfg) {
+      if (bgcol != lastbg)
+        write_sgr(fgcol, bgcol);
+      else
+        write_sgr_fg(fgcol);
+    } else if (bgcol != lastbg) {
+      write_sgr_bg(bgcol);
+    }
+
+    lastfg = fg;
+    lastbg = bg;
+  }
 }
 
 static void send_char(int x, int y, uint32_t c)
