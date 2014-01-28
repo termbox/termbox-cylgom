@@ -37,7 +37,7 @@ static int termw;
 static int termh;
 
 static int inputmode = TB_INPUT_ESC;
-static int outputmode = TB_OUTPUT_MODE_NORMAL;
+static int outputmode = TB_OUTPUT_NORMAL;
 
 static struct ringbuffer inbuf;
 
@@ -328,14 +328,14 @@ static void write_sgr_fg(uint16_t fg) {
 	char buf[32];
 
   switch (outputmode) {
-    case TB_OUTPUT_MODE_256:
-    case TB_OUTPUT_MODE_216:
-    case TB_OUTPUT_MODE_GRAYSCALE:
+    case TB_OUTPUT_256:
+    case TB_OUTPUT_216:
+    case TB_OUTPUT_GRAYSCALE:
       WRITE_LITERAL("\033[38;5;");
       WRITE_INT(fg);
       WRITE_LITERAL("m");
       break;
-    case TB_OUTPUT_MODE_NORMAL:
+    case TB_OUTPUT_NORMAL:
     default:
       WRITE_LITERAL("\033[3");
       WRITE_INT(fg-1);
@@ -347,14 +347,14 @@ static void write_sgr_bg(uint16_t bg) {
 	char buf[32];
 
   switch (outputmode) {
-    case TB_OUTPUT_MODE_256:
-    case TB_OUTPUT_MODE_216:
-    case TB_OUTPUT_MODE_GRAYSCALE:
+    case TB_OUTPUT_256:
+    case TB_OUTPUT_216:
+    case TB_OUTPUT_GRAYSCALE:
       WRITE_LITERAL("\033[48;5;");
       WRITE_INT(bg);
       WRITE_LITERAL("m");
       break;
-    case TB_OUTPUT_MODE_NORMAL:
+    case TB_OUTPUT_NORMAL:
     default:
       WRITE_LITERAL("\033[4");
       WRITE_INT(bg-1);
@@ -366,9 +366,9 @@ static void write_sgr(uint16_t fg, uint16_t bg) {
 	char buf[32];
 
   switch (outputmode) {
-    case TB_OUTPUT_MODE_256:
-    case TB_OUTPUT_MODE_216:
-    case TB_OUTPUT_MODE_GRAYSCALE:
+    case TB_OUTPUT_256:
+    case TB_OUTPUT_216:
+    case TB_OUTPUT_GRAYSCALE:
       WRITE_LITERAL("\033[38;5;");
       WRITE_INT(fg);
       WRITE_LITERAL("m");
@@ -376,7 +376,7 @@ static void write_sgr(uint16_t fg, uint16_t bg) {
       WRITE_INT(bg);
       WRITE_LITERAL("m");
       break;
-    case TB_OUTPUT_MODE_NORMAL:
+    case TB_OUTPUT_NORMAL:
     default:
       WRITE_LITERAL("\033[3");
       WRITE_INT(fg-1);
@@ -468,26 +468,26 @@ static void send_attr(uint16_t fg, uint16_t bg)
     uint16_t bgcol;
 
     switch (outputmode) {
-      case TB_OUTPUT_MODE_256:
+      case TB_OUTPUT_256:
         fgcol = (fg > 255) ? 7 : fg;
         bgcol = (bg > 255) ? 0 : bg;
         break;
 
-      case TB_OUTPUT_MODE_216:
+      case TB_OUTPUT_216:
         fgcol = (fg > 215) ? 7 : fg;
         bgcol = (bg > 215) ? 0 : bg;
         fgcol += 0x10;
         bgcol += 0x10;
         break;
 
-      case TB_OUTPUT_MODE_GRAYSCALE:
+      case TB_OUTPUT_GRAYSCALE:
         fgcol = (fg > 23) ? 23 : fg;
         bgcol = (bg > 23) ? 0  : bg;
         fgcol += 0xe8;
         bgcol += 0xe8;
         break;
 
-      case TB_OUTPUT_MODE_NORMAL:
+      case TB_OUTPUT_NORMAL:
       default:
         fgcol = fg & 0x0F;
         bgcol = bg & 0x0F;
