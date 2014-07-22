@@ -3,6 +3,7 @@
 
 #include "termbox.h"
 #include "ringbuffer.h"
+#include <stdbool.h>
 
 enum {
 	T_ENTER_CA,
