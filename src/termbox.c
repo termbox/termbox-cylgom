@@ -171,7 +171,7 @@ void tb_shutdown(void)
 	cellbuf_free(&back_buffer);
 	cellbuf_free(&front_buffer);
 	free_ringbuffer(&inbuf);
-    termw = termh = -1;
+	termw = termh = -1;
 }
 
 void tb_present(void)
