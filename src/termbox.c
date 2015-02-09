@@ -164,6 +164,7 @@ void tb_shutdown(void)
 	memstream_puts(&write_buffer, funcs[T_CLEAR_SCREEN]);
 	memstream_puts(&write_buffer, funcs[T_EXIT_CA]);
 	memstream_puts(&write_buffer, funcs[T_EXIT_KEYPAD]);
+	memstream_puts(&write_buffer, funcs[T_EXIT_MOUSE]);
 	memstream_flush(&write_buffer);
 	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
 
@@ -313,6 +314,11 @@ int tb_select_input_mode(int mode)
 {
 	if (mode)
 		inputmode = mode;
+	if (mode&TB_INPUT_MOUSE) {
+		memstream_puts(&write_buffer, funcs[T_ENTER_MOUSE]);
+	} else {
+		memstream_puts(&write_buffer, funcs[T_EXIT_MOUSE]);
+	}
 	return inputmode;
 }
 
@@ -596,8 +602,9 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 	/* try to extract event from input buffer, return on success */
 	event->type = TB_EVENT_KEY;
+
 	if (extract_event(event, &inbuf, inputmode))
-		return TB_EVENT_KEY;
+		return event->type;
 
 	/* it looks like input buffer is incomplete, let's try the short path */
 	size_t r = fread(buf, 1, ENOUGH_DATA_FOR_INPUT_PARSING, in);
@@ -608,7 +615,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 			return -1;
 		ringbuffer_push(&inbuf, buf, r);
 		if (extract_event(event, &inbuf, inputmode))
-			return TB_EVENT_KEY;
+			return event->type;
 	}
 
 	/* no stuff in FILE's internal buffer, block in select */
@@ -634,7 +641,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 			/* fill buffer */
 			ringbuffer_push(&inbuf, buf, r);
 			if (extract_event(event, &inbuf, inputmode))
-				return TB_EVENT_KEY;
+				return event->type;
 		}
 		if (FD_ISSET(winch_fds[0], &events)) {
 			event->type = TB_EVENT_RESIZE;
