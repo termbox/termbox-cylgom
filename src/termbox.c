@@ -312,12 +312,15 @@ void tb_clear(void)
 
 int tb_select_input_mode(int mode)
 {
-	if (mode)
+	if (mode) {
 		inputmode = mode;
-	if (mode&TB_INPUT_MOUSE) {
-		memstream_puts(&write_buffer, funcs[T_ENTER_MOUSE]);
-	} else {
-		memstream_puts(&write_buffer, funcs[T_EXIT_MOUSE]);
+		if (mode&TB_INPUT_MOUSE) {
+			memstream_puts(&write_buffer, funcs[T_ENTER_MOUSE]);
+			memstream_flush(&write_buffer);
+		} else {
+			memstream_puts(&write_buffer, funcs[T_EXIT_MOUSE]);
+			memstream_flush(&write_buffer);
+		}
 	}
 	return inputmode;
 }
