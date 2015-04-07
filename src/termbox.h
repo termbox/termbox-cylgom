@@ -44,6 +44,8 @@ extern "C" {
 #define TB_KEY_MOUSE_RIGHT  (0xFFFF-23)
 #define TB_KEY_MOUSE_MIDDLE (0xFFFF-24)
 #define TB_KEY_MOUSE_RELEASE (0xFFFF-25)
+#define TB_KEY_MOUSE_WHEEL_UP (0xFFFF-26)
+#define TB_KEY_MOUSE_WHEEL_DOWN (0xFFFF-27)
 
 /* These are all ASCII code points below SPACE character and a BACKSPACE key. */
 #define TB_KEY_CTRL_TILDE       0x00
