@@ -97,8 +97,7 @@ bool extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmo
 				event->mod = 0;
 				ringbuffer_pop(inbuf, 0, 1);
 				return true;
-			}
-			if (inputmode&TB_INPUT_ALT) {
+			} else if (inputmode&TB_INPUT_ALT) {
 				/* if we're in alt mode, set ALT modifier to event and redo parsing */
 				event->mod = TB_MOD_ALT;
 				ringbuffer_pop(inbuf, 0, 1);
