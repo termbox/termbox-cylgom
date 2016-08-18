@@ -82,10 +82,10 @@ static volatile int buffer_size_change_request;
 
 /* -------------------------------------------------------- */
 
-int tb_init(void)
+int tb_init_file(const char* name)
 {
-	out = open("/dev/tty", O_WRONLY);
-	in = fopen("/dev/tty", "r");
+	out = open(name, O_WRONLY);
+	in = fopen(name, "r");
 
 	if (out == -1 || !in) {
 		if(out != -1)
@@ -150,6 +150,11 @@ int tb_init(void)
 	init_ringbuffer(&inbuf, 4096);
 
 	return 0;
+}
+
+int tb_init(void)
+{
+	return tb_init_file("/dev/tty");
 }
 
 void tb_shutdown(void)
