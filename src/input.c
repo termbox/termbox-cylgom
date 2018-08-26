@@ -10,7 +10,10 @@
 static int starts_with(const char *s1, const char *s2)
 {
 	/* nice huh? */
-	while (*s2) if (*s1++ != *s2++) return 0; return 1;
+	while (*s2) if (*s1++ != *s2++) {
+		return 0;
+	}
+	return 1;
 }
 
 /* convert escape sequence to event, and return consumed bytes on success (failure == 0) */
