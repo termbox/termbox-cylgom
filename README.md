@@ -1,66 +1,38 @@
-# Termbox
+# Termbox-next
+## The original Termbox
+[Termbox](https://github.com/nsf/termbox)
+was a promising Text User Interface (TUI) library.
+Unfortunately, its original author
+[changed his mind](https://github.com/nsf/termbox/issues/37#issuecomment-261075481)
+about consoles and despite the
+[community's efforts](https://github.com/nsf/termbox/pull/104#issuecomment-300308156)
+to keep the library's development going, preferred to let it die. Before it happened,
+[some people](https://wiki.musl-libc.org/alternatives.html)
+already noticed the robustness of the initial architecture
+[became compromised](https://github.com/nsf/termbox/commit/66c3f91b14e24510319bce6b5cc2fecf8cf5abff#commitcomment-3790714)
+in a nonsensical refactoring frenzy. Now, the author refuses to merge features
+like true-color support, invoking some
+[spurious correlations](https://github.com/nsf/termbox/pull/104#issuecomment-300292223)
+we will discuss no further.
 
-Termbox is a library that provides minimalistic API which allows the
-programmer to write text-based user interfaces.
+## The new Termbox-next
+This fork was made to restore the codebase to its original quality (before
+[66c3f91](https://github.com/nsf/termbox/commit/66c3f91b14e24510319bce6b5cc2fecf8cf5abff))
+while providing all the functionnalities of the current implementation.
+This was achieved by branching at
+[a2e217f](https://github.com/nsf/termbox/commit/a2e217f0fb97e6bbd589136ea3945f9d5a123d81)
+and cherry-picking all the commits up to
+[d63b83a](https://github.com/nsf/termbox/commit/d63b83af04e0fd6da836bb8f37e5cec72a1dc95a)
+if they weren't harmful.
 
-It is based on a very simple abstraction. The main idea is viewing terminals as
-a table of fixed-size cells and input being a stream of structured
-messages. Would be fair to say that the model is inspired by windows console
-API. The abstraction itself is not perfect and it may create problems in certain
-areas. The most sensitive ones are copy & pasting and wide characters (mostly
-Chinese, Japanese, Korean (CJK) characters). When it comes to copy & pasting,
-the notion of cells is not really compatible with the idea of text. And CJK
-runes often require more than one cell to display them nicely. Despite the
-mentioned flaws, using such a simple model brings benefits in a form of
-simplicity. And KISS principle is important.
+## Changes
+A lot of things changed during the process:
+ - *waf*, the original build system, was completely removed from the
+   project and replaced by make.
+ - anything related to python was removed as well
 
-At this point one should realize, that CLI (command-line interfaces) aren't
-really a thing termbox is aimed at. But rather pseudo-graphical user interfaces.
-
-### Installation
-
-Termbox comes with a waf-based build scripts. In order to configure, build and
-install it, do the following::
-
-```
-./waf configure --prefix=/usr                                (configure)
-./waf                                                        (build)
-./waf install --destdir=DESTDIR                              (install)
-```
-
-By default termbox will install the header file and both shared and static
-libraries. If you want to install a shared library or static library alone, use
-the following as an install command::
-
-```
-./waf install --targets=termbox_shared --destdir=PREFIX      (shared library)
-```
-
-or::
-
-```
-./waf install --targets=termbox_static --destdir=PREFIX      (static library)
-```
-
-##### Python
-
-In order to install the python module, use the following command (as root or
-via sudo)::
-
-```
-python setup.py install
-```
-
-for Python 3::
-
-```
-python3 setup.py install
-```
-
-### Getting started
-
-Termbox's interface only consists of 12 functions::
-
+## Getting started
+Termbox's interface only consists of 12 functions:
 ```
 tb_init() // initialization
 tb_shutdown() // shutdown
@@ -79,87 +51,8 @@ tb_select_input_mode() // change input mode
 tb_peek_event() // peek a keyboard event
 tb_poll_event() // wait for a keyboard event
 ```
-
 See src/termbox.h header file for full detail.
 
-### Links
-
-If you want me to add your Termbox project here, send me a pull request or drop
-a note via email, you can find my email below.
-
-##### Language bindings
-
-- https://github.com/nsf/termbox - Python
-- https://github.com/adsr/termbox-php - PHP
-- https://github.com/gchp/rustbox - Rust
-- https://github.com/fouric/cl-termbox - Common Lisp
-- https://github.com/zyedidia/termbox-d - D
-- https://github.com/dduan/Termbox - Swift
-- https://github.com/andrewsuzuki/termbox-crystal - Crystal
-- https://github.com/jgoldfar/Termbox.jl - Julia
-- https://github.com/mitchellwrosen/termbox - Haskell
-
-##### Other implementations
-
-- https://github.com/nsf/termbox-go - Go pure Termbox implementation
-
-##### Applications
-
-- https://github.com/adsr/mle - a small, flexible terminal-based text editor
-
-### Bugs & questions
-
-Report bugs to the https://github.com/nsf/termbox issue tracker. Send rants
-and questions to me: no.smile.face@gmail.com.
-
-### Changes
-
-v1.1.2:
-
-- Properly include changelog into the tagged version commit. I.e. I messed up
-  by tagging v1.1.1 and describing it in changelog after tagged commit. This
-  commit marked as v1.1.2 includes changelog for both v1.1.1 and v1.1.2. There
-  are no code changes in this minor release.
-
-v1.1.1:
-
-- Ncurses 6.1 compatibility fix. See https://github.com/nsf/termbox-go/issues/185.
-
-v1.1.0:
-
-- API: tb_width() and tb_height() are guaranteed to be negative if the termbox
-  wasn't initialized.
-- API: Output mode switching is now possible, adds 256-color and grayscale color
-  modes.
-- API: Better tb_blit() function. Thanks, Gunnar Zötl <gz@tset.de>.
-- API: New tb_cell_buffer() function for direct back buffer access.
-- API: Add new init function variants which allow using arbitrary file
-  descriptor as a terminal.
-- Improvements in input handling code.
-- Calling tb_shutdown() twice is detected and results in abort() to discourage
-  doing so.
-- Mouse event handling is ported from termbox-go.
-- Paint demo port from termbox-go to demonstrate mouse handling capabilities.
-- Bug fixes in code and documentation.
-
-v1.0.0:
-
-- Remove the Go directory. People generally know about termbox-go and where
-  to look for it.
-- Remove old terminfo-related python scripts and backport the new one from
-  termbox-go.
-- Remove cmake/make-based build scripts, use waf.
-- Add a simple terminfo database parser. Now termbox prefers using the
-  terminfo database if it can be found. Otherwise it still has a fallback
-  built-in database for most popular terminals.
-- Some internal code cleanups and refactorings. The most important change is
-  that termbox doesn't leak meaningless exported symbols like 'keys' and
-  'funcs' now. Only the ones that have 'tb_' as a prefix are being exported.
-- API: Remove unsigned ints, use plain ints instead.
-- API: Rename UTF-8 functions 'utf8_*' -> 'tb_utf8_*'.
-- API: TB_DEFAULT equals 0 now, it means you can use attributes alones
-  assuming the default color.
-- API: Add TB_REVERSE.
-- API: Add TB_INPUT_CURRENT.
-- Move python module to its own directory and update it due to changes in the
-  termbox library.
+## TL;DR
+`make` to build a static version of the lib under bin/termbox.a
+`cd src/demo && make` to build the example programs in src/demo/
