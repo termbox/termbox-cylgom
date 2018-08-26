@@ -15,6 +15,10 @@ output:output.o
 	@echo "compiling $@"
 	@$(CC) $(INCL) $(FLAGS) -o $@ $@.o $(BIND)/termbox.a
 
+paint:paint.o
+	@echo "compiling $@"
+	@$(CC) $(INCL) $(FLAGS) -o $@ $@.o $(BIND)/termbox.a
+
 clean:
 	@echo "cleaning workspace"
-	@rm -rf *.o keyboard output
+	@rm -rf *.o keyboard output paint
