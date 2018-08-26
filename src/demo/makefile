@@ -1,20 +1,20 @@
-NAME=keyboard
 CC=gcc
 FLAGS=-std=c99 -pedantic -Wall -Werror -g -static 
 INCL=-I../
 BIND=../../bin
 
-.PHONY:all
-all:$(NAME)
-
-$(NAME).o:$(NAME).c
+%.o:%.c
 	@echo "building source object $@"
 	@$(CC) $(INCL) $(FLAGS) -c -o $@ $<
 
-$(NAME):$(NAME).o
+keyboard:keyboard.o
 	@echo "compiling $@"
-	@$(CC) $(INCL) $(FLAGS) -o $(NAME) $(NAME).o $(BIND)/termbox.a
+	@$(CC) $(INCL) $(FLAGS) -o $@ $@.o $(BIND)/termbox.a
+
+output:output.o
+	@echo "compiling $@"
+	@$(CC) $(INCL) $(FLAGS) -o $@ $@.o $(BIND)/termbox.a
 
 clean:
 	@echo "cleaning workspace"
-	@rm -rf ./*.o ./$(NAME)
+	@rm -rf *.o keyboard output
