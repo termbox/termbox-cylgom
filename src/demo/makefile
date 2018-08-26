@@ -7,6 +7,8 @@ BIND=../../bin
 	@echo "building source object $@"
 	@$(CC) $(INCL) $(FLAGS) -c -o $@ $<
 
+all:keyboard output paint
+
 keyboard:keyboard.o
 	@echo "compiling $@"
 	@$(CC) $(INCL) $(FLAGS) -o $@ $@.o $(BIND)/termbox.a
