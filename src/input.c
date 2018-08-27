@@ -166,7 +166,7 @@ bool extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmo
 	ringbuffer_read(inbuf, buf, nbytes);
 	buf[nbytes] = '\0';
 
-	if (buf[0] == '\033') {
+	if ((buf[0] == '\033') && (buf[1] !='\0')) {
 		int n = parse_escape_seq(event, buf, nbytes);
 		if (n != 0) {
 			bool success = true;
