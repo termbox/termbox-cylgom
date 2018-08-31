@@ -248,7 +248,7 @@ bool extract_event(struct tb_event* event, struct ringbuffer* inbuf,
 	ringbuffer_read(inbuf, buf, nbytes);
 	buf[nbytes] = '\0';
 
-	if ((buf[0] == '\033') && (buf[1] != '\0'))
+	if (buf[0] == '\033')
 	{
 		int n = parse_escape_seq(event, buf, nbytes);
 
