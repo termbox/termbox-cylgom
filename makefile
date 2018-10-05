@@ -2,6 +2,11 @@ NAME=termbox
 CC=gcc
 FLAGS=-std=c99 -pedantic -Wall -Werror -g
 
+OS:=$(shell uname -s)
+ifeq ($(OS),Linux)
+	FLAGS+=-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
+endif
+
 BIND=bin
 SRCD=src
 OBJD=obj
