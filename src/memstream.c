@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -14,7 +13,7 @@ void memstream_init(struct memstream* s, int fd, void* buffer, size_t len)
 
 void memstream_flush(struct memstream* s)
 {
-	assert(write(s->file, s->data, s->pos) == s->pos);
+	write(s->file, s->data, s->pos);
 	s->pos = 0;
 }
 

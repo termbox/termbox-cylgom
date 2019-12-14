@@ -777,7 +777,7 @@ static void sigwinch_handler(int xxx)
 {
 	(void) xxx;
 	const int zzz = 1;
-	assert(write(winch_fds[1], &zzz, sizeof(int)) == sizeof(int));
+	write(winch_fds[1], &zzz, sizeof(int));
 }
 
 static void update_size(void)
@@ -876,7 +876,7 @@ static int wait_fill_event(struct tb_event* event, struct timeval* timeout)
 		{
 			event->type = TB_EVENT_RESIZE;
 			int zzz = 0;
-			assert(read(winch_fds[0], &zzz, sizeof(int)) == sizeof(int));
+			read(winch_fds[0], &zzz, sizeof(int));
 			buffer_size_change_request = 1;
 			get_term_size(&event->w, &event->h);
 			return TB_EVENT_RESIZE;
